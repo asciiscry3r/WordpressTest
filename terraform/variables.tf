@@ -2,7 +2,7 @@
 // Copyright (C) 2021 by Klimenko Maxim Sergievich
 
 variable "aws_region" {
-  default = "us-east-1"
+  default = "eu-central-1"
 }
 
 variable "aws_zone_id" {

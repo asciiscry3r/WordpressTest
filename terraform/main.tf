@@ -2,7 +2,7 @@
 
 terraform {
   backend "s3" {
-    bucket = "mks-infra-terraform-state-store"
+    bucket = "mks-test-tasks-terraform-state-store"
     key    = "eu-central-1"
     region = "eu-central-1"
   }
@@ -17,3 +17,4 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+

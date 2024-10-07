@@ -1,3 +1,4 @@
 wordpressadmin_credentials.csv
-terrform/.terraform
-
+terraform/.terraform
+terraform/.terraform.lock.hcl
+terraform/modules/ec2instance/wordpress_server.pem
