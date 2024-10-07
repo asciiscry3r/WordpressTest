@@ -9,6 +9,10 @@ resource "aws_vpc" "wordpress" {
   }
 }
 
+data "aws_vpc" "wordpress" {
+  id = aws_vpc.wordpress.id
+}
+
 resource "aws_internet_gateway" "wordpressgw" {
   vpc_id = aws_vpc.wordpress.id
 
@@ -16,6 +20,11 @@ resource "aws_internet_gateway" "wordpressgw" {
     Name = "wordpress GW"
   }
 }
+
+//resource "aws_route_table_association" "wordpressgw" {
+//  gateway_id     = aws_internet_gateway.wordpressgw.id
+//  route_table_id = data.aws_vpc.wordpress.main_route_table_id
+//}
 
 data "aws_availability_zones" "available" {
   state = "available"
@@ -41,6 +50,22 @@ resource "aws_subnet" "wordpress2" {
   }
 }
 
+resource "aws_route_table_association" "wordpress1" {
+  subnet_id      = aws_subnet.wordpress1.id
+  route_table_id = data.aws_vpc.wordpress.main_route_table_id
+}
+
+resource "aws_route_table_association" "wordpress2" {
+  subnet_id      = aws_subnet.wordpress2.id
+  route_table_id = data.aws_vpc.wordpress.main_route_table_id
+}
+
+resource "aws_route" "wordpress" {
+  route_table_id              = data.aws_vpc.wordpress.main_route_table_id
+  destination_cidr_block      = "0.0.0.0/0"
+  gateway_id                  = aws_internet_gateway.wordpressgw.id
+}
+
 resource "aws_db_subnet_group" "wordpress" {
   name       = "wordpress"
   subnet_ids = [aws_subnet.wordpress1.id, aws_subnet.wordpress2.id]
@@ -57,7 +82,7 @@ resource "aws_db_instance" "wordpress" {
   engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   username             = "wordpress"
-  password             = "password" // just placeholder
+  password             = "MoOLdV9jFY$8fg" // just placeholder
   db_subnet_group_name = aws_db_subnet_group.wordpress.name
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
@@ -71,6 +96,11 @@ resource "aws_subnet" "wordpress" {
   tags = {
     Name = "wordpress"
   }
+}
+
+resource "aws_route_table_association" "wordpress" {
+  subnet_id      = aws_subnet.wordpress.id
+  route_table_id = data.aws_vpc.wordpress.main_route_table_id
 }
 
 resource "aws_elasticache_subnet_group" "wordpress" {
