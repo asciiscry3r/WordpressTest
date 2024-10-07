@@ -155,6 +155,7 @@
   reboot:
     reboot_timeout: 3600
   when: server_system_upgrades is changed or server_system_hostname is changed or machine_reboot_required.stat.exists
+  ignore_errors: true
   tags:
     - reboot_machine
 
