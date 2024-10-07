@@ -9,6 +9,14 @@ resource "aws_vpc" "wordpress" {
   }
 }
 
+resource "aws_internet_gateway" "wordpressgw" {
+  vpc_id = aws_vpc.wordpress.id
+
+  tags = {
+    Name = "wordpress GW"
+  }
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -49,7 +57,7 @@ resource "aws_db_instance" "wordpress" {
   engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   username             = "wordpress"
-  password             = "deedtbdeyhbehb"
+  password             = "@MoOL#V9jFY$8*"
   db_subnet_group_name = aws_db_subnet_group.wordpress.name
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
@@ -90,6 +98,7 @@ module "deploy_wordpress_server" {
     encryption_state = true
     instance_type = "t2.micro"
     vpc_id_main = aws_vpc.wordpress.id
+    server_subnet_id = aws_subnet.wordpress.id
     ec2_volume_size = "30"
     cidr_allowed_for_ssh = [ var.cidr_allowed_for_ssh ]
     server_record_name = "wordpress.mksscryertower.quest"

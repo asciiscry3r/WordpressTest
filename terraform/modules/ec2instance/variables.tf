@@ -8,6 +8,10 @@ variable "vpc_id_main" {
   default = "vpc-096e5bbc5fbfa0ebc"
 }
 
+variable "server_subnet_id" {
+  default = "096e5bbc5fbfa0ebc"
+}
+
 variable "instance_type" {
   default = "t2.micro"
 }

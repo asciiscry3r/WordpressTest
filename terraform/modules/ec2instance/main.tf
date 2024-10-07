@@ -137,11 +137,12 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_instance" "arch_server" {
-  count           = ( var.deploy_arch == true ? 1 : 0 )
-  ami             = var.aws_arch_ami
-  instance_type   = var.instance_type
-  key_name        = aws_key_pair.generated_key.key_name
-  security_groups = [ aws_security_group.server.name ]
+  count                  = ( var.deploy_arch == true ? 1 : 0 )
+  ami                    = var.aws_arch_ami
+  instance_type          = var.instance_type
+  key_name	         = aws_key_pair.generated_key.key_name
+  subnet_id              = var.server_subnet_id
+  vpc_security_group_ids = [ aws_security_group.server.id ]
 
   root_block_device {
     encrypted   = var.encryption_state
@@ -176,6 +177,7 @@ resource "aws_instance" "server" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   key_name	         = aws_key_pair.generated_key.key_name
+  subnet_id              = var.server_subnet_id
   vpc_security_group_ids = [ aws_security_group.server.id ]
 
   root_block_device {
