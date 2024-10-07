@@ -55,6 +55,21 @@ resource "aws_db_instance" "wordpress" {
   skip_final_snapshot  = true
 }
 
+resource "aws_subnet" "wordpress" {
+  vpc_id            = aws_vpc.wordpress.id
+  cidr_block        = "10.0.0.0/24"
+  availability_zone = "eu-central-1a"
+
+  tags = {
+    Name = "wordpress"
+  }
+}
+
+resource "aws_elasticache_subnet_group" "wordpress" {
+  name       = "wordpress-cache-subnet"
+  subnet_ids = [aws_subnet.wordpress.id]
+}
+
 resource "aws_elasticache_cluster" "wordpress" {
   cluster_id        = "wordpress"
   engine            = "redis"
@@ -62,7 +77,7 @@ resource "aws_elasticache_cluster" "wordpress" {
   num_cache_nodes   = 1
   port              = 6379
   apply_immediately = true
-  subnet_group_name = aws_db_subnet_group.wordpress.name
+  subnet_group_name = aws_elasticache_subnet_group.wordpress.name
 }
 
 module "deploy_wordpress_server" {

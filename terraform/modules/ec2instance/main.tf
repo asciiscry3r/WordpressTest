@@ -1,13 +1,10 @@
 // Copyright (C) 2022 by Klimenko Maxim Sergeevich
 
-data "aws_vpc" "default" {
-  id = var.vpc_id_main
-}
 
 resource "aws_security_group" "server" {
   name        = "${var.instance_tag_name}_security_group"
   description = "Allow inbound traffic"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = var.vpc_id_main
 
   ingress {
     description      = "SSH from VPC"
@@ -175,11 +172,11 @@ resource "aws_eip" "arch_server" {
 }
 
 resource "aws_instance" "server" {
-  count           = ( var.deploy_ubuntu == true ? 1 : 0 ) 
-  ami             = data.aws_ami.ubuntu.id
-  instance_type   = var.instance_type
-  key_name        = aws_key_pair.generated_key.key_name
-  security_groups = [ aws_security_group.server.name ]
+  count                  = ( var.deploy_ubuntu == true ? 1 : 0 ) 
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.instance_type
+  key_name	         = aws_key_pair.generated_key.key_name
+  vpc_security_group_ids = [ aws_security_group.server.id ]
 
   root_block_device {
     encrypted   = var.encryption_state
