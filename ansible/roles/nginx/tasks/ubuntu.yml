@@ -1,0 +1,56 @@
+---
+- name: Added key for Nginx | Ubuntu
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: ABF5BD827BD9BF62
+  tags:
+    - add_repository
+
+- name: Added Ubuntu Nginx repository | Ubuntu
+  apt_repository:
+    repo: deb https://nginx.org/packages/ubuntu/ "{{ ansible_distribution_release }}" nginx
+    state: present
+  tags:
+    - add_repository
+
+- name: Download Nginx key | Ubuntu
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 7BF576066ADA65728FC7E70A8C47BE8E75BCA694
+  tags:
+    - add_repository
+
+- name: Added Ubuntu Certbot repository | Ubuntu
+  apt_repository:
+    repo: deb https://ppa.launchpadcontent.net/certbot/certbot/ubuntu bionic main
+    state: present
+  tags:
+    - add_repository
+
+- name: Install Nginx package | Ubuntu
+  apt:
+    name: nginx
+    state: present
+  tags:
+    - add_nginx
+
+- name: Install Nginx package | Ubuntu
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - certbot
+    - python-certbot-nginx
+  tags:
+    - add_nginx
+
+- name: Create SSL/TLS sertifiate for Nginx by using LetsEncrypt | Ubuntu
+  shell: sudo systemctl stop apache2 && sudo systemctl disable apache2
+  ignore_errors: true
+  tags:
+    - instal_nginx
+    
+- name: Create SSL/TLS sertifiate for Nginx by using LetsEncrypt | Ubuntu
+  shell: sudo certbot certonly --standalone -d '{{ server_name }}' --agree-tos -m '{{ server_admin_email }}' -n
+  tags:
+    - instal_nginx

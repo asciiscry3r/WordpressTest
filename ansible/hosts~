@@ -1,0 +1,15 @@
+[uni_server]
+uni_server ansible_host=184.73.242.38 ansible_ssh_user=arch ansible_ssh_private_key_file=/home/max/Development/myinfrastructure/terraform/modules/ec2instance/uni_server.pem
+
+[uni_server_2]
+uni_server_2 ansible_host=44.218.8.119 ansible_ssh_user=arch ansible_ssh_private_key_file=/home/max/Development/myinfrastructure/terraform/modules/ec2instance/uni_server_2.pem
+
+
+[spec_server_2]
+
+
+[spec_server_1]
+
+
+[spec_server_3]
+

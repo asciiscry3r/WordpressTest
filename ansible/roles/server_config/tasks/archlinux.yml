@@ -1,0 +1,82 @@
+---
+
+- name: Update pacman keyring | Arch
+  shell: |
+    pacman-key --init &&
+    pacman-key --populate
+    pacman-key --recv-keys 0020B2CADB1E24C1E7CE4325E4D76838611CF2ED
+    pacman-key --lsign-key 0020B2CADB1E24C1E7CE4325E4D76838611CF2ED
+  become: true
+  become_user: root
+  tags:
+    - update_server
+    - reboot_machine
+
+- name: Create logrotate configs from template
+  template:
+    src: pacman.conf.j2
+    dest: /etc/pacman.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - setup_sysctl
+
+- name: Update pacman database | Arch
+  shell: sudo pacman -Sy
+  tags:
+    - update_server
+    - reboot_machine  
+
+- name: Get system upgrades | Arch
+  pacman:
+    upgrade: yes
+    update_cache: yes
+  register: server_system_upgrades
+  tags:
+    - update_server
+    - reboot_machine
+
+- name: Install apparmor profiles and system utils | Arch
+  pacman:
+    pkg: '{{ item }}'
+    update_cache: yes
+    state: latest
+  with_items:
+    - logrotate
+    - apparmor
+  tags:
+    - update_server
+
+- name: Install user defined packages | Arch
+  pacman:
+    pkg: '{{ item.name }}'
+    update_cache: yes
+    state: '{{ item.state }}'
+  with_items:
+    - "{{ server_apps }}"
+  tags:
+    - manage_packages
+
+- name: Added umask to bash | Arch
+  lineinfile:
+    path: .bashrc
+    state: present
+    line: 'umask 027'
+  tags:
+    - update_server
+ 
+- name: Added candys to bash | Arch
+  lineinfile:
+    path: .bashrc
+    state: present
+    line: 'fortune | cowsay -f tux | lolcat'
+  tags:
+    - update_server
+
+- name: Check if machine required reboot | Arch
+  stat:
+    dest: /var/run/reboot-required
+  register: machine_reboot_required
+  tags:
+    - reboot_machine

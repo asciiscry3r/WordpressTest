@@ -1,0 +1,55 @@
+---
+
+- name: Get system upgrades | Ubuntu
+  apt:
+    upgrade: dist
+    update_cache: yes
+    cache_valid_time: 3600
+  register: server_system_upgrades
+  tags:
+    - update_server
+    - reboot_machine
+
+- name: Install user defined packages | Ubuntu
+  apt:
+    pkg: '{{ item.name }}'
+    update_cache: yes
+    cache_valid_time: 3600
+    state: '{{ item.state }}'
+  with_items:
+    - "{{ server_apps }}"
+  tags:
+    - manage_packages
+
+- name: Added umask to bash | Ubuntu
+  lineinfile:
+    path: .bashrc
+    state: present
+    line: 'umask 027'
+  tags:
+    - google-authenticator
+
+- name: Added candys to bash | Ubuntu
+  lineinfile:
+    path: .bashrc
+    state: present
+    line: 'fortune | cowsay -f tux | lolcat'
+  tags:
+    - google-authenticator
+
+- name: Install apparmor profiles and system utils | Ubuntu
+  apt:
+    pkg: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - apparmor-profiles
+    - apparmor-profiles-extra
+    - apparmor-utils
+
+- name: Check if machine required reboot | Ubuntu
+  stat:
+    dest: /var/run/reboot-required
+  register: machine_reboot_required
+  tags:
+    - reboot_machine

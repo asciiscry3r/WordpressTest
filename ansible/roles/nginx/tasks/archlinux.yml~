@@ -1,0 +1,16 @@
+---
+- name: Install Nginx and system utils | Arch
+  pacman:
+    pkg: '{{ item }}'
+    update_cache: yes
+    state: latest
+  with_items:
+    - nginx
+    - certbot
+  tags:
+    - instal_nginx
+
+- name: Create SSL/TLS sertifiate for Nginx by using LetsEncrypt | Arch
+  shell: sudo certbot certonly --standalone -d '{{ server_name }}' --agree-tos -m '{{ server_admin_email }}' -n
+  tags:
+    - instal_nginx

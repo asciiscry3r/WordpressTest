@@ -1,0 +1,8 @@
+galaxy_info:
+  author: Klimenko Maxim Sergievich
+  description: Configure ubuntu based servers
+  license: MIT
+  min_ansible_version: 2.1
+  galaxy_tags: []
+
+dependencies: []

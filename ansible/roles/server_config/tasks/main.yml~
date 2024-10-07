@@ -1,0 +1,234 @@
+
+---
+# tasks file for roles/server_config
+- debug:
+    var: "{{ inventory_hostname }}"
+
+- name: Print all available facts
+  debug:
+    var: ansible_facts
+
+- name: Modify resolv.conf
+  lineinfile:
+    path: /etc/resolv.conf
+    line: 'nameserver 8.8.8.8'
+
+- name: Modify resolv.conf
+  lineinfile:
+    path: /etc/resolv.conf
+    line: 'nameserver 1.1.1.1'
+
+- name: Install Ubuntu/Debian packages and configure OS specific settings
+  import_tasks: debbased.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Arch packages and configure OS specific settings
+  import_tasks: archlinux.yml
+  when: ansible_distribution == 'Archlinux'
+
+- name: Swap creating
+  shell: |
+    sudo fallocate -l 4G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  tags:
+    - createswap
+
+- name: Set server hostname
+  hostname:
+    name: "{{ server_name }}"
+  register: server_system_hostname
+
+- name: Define hostname in hosts file
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    line: '127.0.0.1 localhost {{ server_name }}'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Set server time zone
+  timezone:
+    name: "{{ server_timezone }}"
+  tags:
+    - set_timezone
+
+- name: Enable time sync with NTP servers
+  shell: timedatectl set-ntp yes
+  register: timedateoutput
+
+- name: Display timedatectl output
+  debug:
+    var: timedateoutput
+
+- name: Configure systemd journal log size and rotate time
+  shell: |
+    journalctl --vacuum-size="{{ journal_vacuum_size }}"
+    journalctl --vacuum-time="{{ journal_vacuum_time }}"
+  register: journactloutput
+
+- name: Display journactl output
+  debug:
+    var: journactloutput
+
+- name: Delete existing entries in fstab | tmp
+  lineinfile:
+    path: /etc/fstab
+    state: absent
+    regexp: '\/tmp'
+
+- name: Delete existing entries in fstab | shm
+  lineinfile:
+    path: /etc/fstab
+    state: absent
+    regexp: '\/shm'
+
+- name: Modify fstab - add shm
+  lineinfile:
+    path: /etc/fstab
+    line: 'tmpfs /dev/shm tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0'
+
+- name: Modify fstab - add tmp
+  lineinfile:
+    path: /etc/fstab
+    line: 'tmpfs /tmp tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0'
+
+- name: Modify fstab - add tmp
+  lineinfile:
+    path: /etc/fstab
+    line: 'tmpfs /var/tmp tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0'
+
+- name: Delete securetty file
+  file:
+    path: /etc/securetty
+    state: absent
+
+- name: Create securetty file
+  file:
+    path: /etc/securetty
+    state: touch
+    mode: 0644
+
+- name: Insert/Update content in securetty file
+  blockinfile:
+    path: /etc/securetty
+    block: "{{ server_securetty_content }}"
+
+- name: Create logrotate configs from template
+  template:
+    src: sysctl.conf.j2
+    dest: /etc/sysctl.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - setup_sysctl
+
+- name: Create logrotate configs from template
+  template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/{{ item.name }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ server_logrotate_conf }}"
+  when: server_logrotate_conf and server_logrotate_conf != None
+  tags:
+    - setup_logrotate
+
+- name: Apply enforce policy to all profiles
+  shell: aa-enforce /etc/apparmor.d/*
+  ignore_errors: True
+  register: apparmor_enforce_output
+  tags:
+    - enforce_apparmor_profiles
+
+- name: Display aa-enforce output
+  debug:
+    var: apparmor_enforce_output
+
+- name: Reboot a machine that might have lots of updates to apply
+  reboot:
+    reboot_timeout: 3600
+  when: server_system_upgrades is changed or server_system_hostname is changed or machine_reboot_required.stat.exists
+  tags:
+    - reboot_machine
+
+# - name: Added pam module 
+#   template:
+#     src: sshd_pam.j2
+#     dest: /etc/pam.d/sshd
+#     owner: root
+#     group: root
+#     mode: 0644
+#   tags:
+#     - google-authenticator
+
+# - name: Added sshd config
+#   template:
+#     src: sshd.j2
+#     dest: /etc/ssh/sshd_config
+#     owner: root
+#     group: root
+#     mode: 0644
+#   tags:
+#     - google-authenticator
+
+
+- name: Install ufw package
+  package:
+    name: ufw
+  when: "'local' not in inventory_hostname"
+  tags:
+    - firewall
+    
+- name: Allow incoming SSH conection | Ubuntu
+  ufw:
+    rule: allow
+    name: OpenSSH
+  when: ('local' not in inventory_hostname and ansible_distribution == 'Ubuntu')
+  tags:
+    - firewall
+
+- name: Allow incoming SSH conection | Arch
+  ufw:
+    rule: allow
+    name: SSH
+  when: ('local' not in inventory_hostname and ansible_distribution == 'Archlinux')
+  tags:
+    - firewall
+
+- name: Enable firewall on system startup
+  ufw:
+    state: enabled
+    logging: on
+  tags:
+    - firewall
+
+- name: UFW set default policy
+  shell: |
+    sudo ufw default reject incoming
+    sudo ufw default deny routed
+  tags:
+    - firewall
+
+- name: Allow and manage access on server | sudo ufw allow from 203.0.113.103 proto tcp to any port 22
+  ufw:
+    rule: '{{ item.action }}'
+ #   interface: '{{ item.interface }}'
+    direction: '{{ item.direction }}'
+    proto: '{{ item.proto }}'
+    src: '{{ item.src | default("any") }}'
+    dest: '{{ item.dest | default("any") }}'
+    to_port: '{{ item.to_port }}'
+    route: '{{ item.route | default("no")}}'
+    delete: '{{ item.route | default("no")}}'
+  with_items:
+    - "{{ server_allowed_access }}"
+  when: server_allowed_access and server_allowed_access != None
+  tags:
+    - manage_firewall

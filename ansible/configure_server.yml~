@@ -1,0 +1,45 @@
+---
+- hosts: all
+#- hosts: uni_server
+
+  roles:
+    - name: server_config
+      become: yes
+      become_user: root
+      tags: configure
+
+- hosts: uni_server
+
+  roles:
+    - name: nginx
+      become: yes
+      become_user: root
+      tags: nginx
+    - name: boinc
+      become: yes
+      become_user: root
+      tags: boinc
+    - name: wireguard
+      become: yes
+      become_user: root
+      tags: wireguard
+    - name: prometheus
+      become: yes
+      become_user: root
+      tags: prometheus
+
+- hosts: uni_server_2
+
+  roles:
+    - name: nginx
+      become: yes
+      become_user: root
+      tags: nginx
+    - name: boinc
+      become: yes
+      become_user: root
+      tags: boinc
+    - name: wireguard
+      become: yes
+      become_user: root
+      tags: wireguard

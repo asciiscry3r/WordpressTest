@@ -1,0 +1,94 @@
+###############################################################################
+# Ubuntu server
+---
+
+server_name: wordpress.mksscryertower.quest
+server_root_folder: /var/www/mkssite
+server_web_user: www-data
+server_timezone: "Europe/Kiev"
+server_admin_email: klimenkomaximsergievich@gmail.com
+journal_vacuum_size: "500M"
+journal_vacuum_time: "90d"
+server_apps:
+  - name: dnsutils
+    state: present
+  - name: net-tools
+    state: present
+  - name: rkhunter
+    state: present
+  - name: curl
+    state: present
+  - name: wget
+    state: present
+  - name: vim
+    state: present
+  - name: ranger
+    state: present
+  - name: git
+    state: present
+  - name: screen
+    state: present
+  - name: htop
+    state: present
+  - name: screen
+    state: present
+  - name: sslh
+    state: present
+  - name: libpam-google-authenticator
+    state: present
+  - name: fortune-mod
+    state: present
+  - name: cowsay
+    state: present
+  - name: lolcat
+    state: present
+#  - name: grafana
+#    state: present
+#  - name: lkrg-dkms
+#    state: present
+#  - name: yay-bin
+#    state: present
+
+server_securetty_content: |
+  #tty1
+  #tty2
+  #tty3
+  #tty4
+  #tty5
+  #tty6
+  #tty7
+  #tty8
+
+server_allowed_access:
+#    rule: '{{ item.action }}'
+#    interface: '{{ item.interface | default("eth0")}}'
+#    direction: '{{ item.direction }}'
+#    proto: '{{ item.proto }}'
+#    src: '{{ item.src | default("any") }}'
+#    dest: '{{ item.dest | default("any") }}'
+#    to_port: '{{ item.to_port }}'
+#    route: '{{ item.route | default("no")}}'
+#    delete: '{{ item.route | default("no")}}'
+  - action: allow
+    direction: in
+    proto: tcp
+    to_port: 80
+  - action: allow
+    direction: in
+    proto: tcp
+    to_port: 443
+
+server_logrotate_conf:
+  - name: test
+    file_name: /var/log/nginx/*.log
+    params:
+      - "daily"
+      - "missingok"
+      - "rotate 14"
+      - "compress"
+      - "notifempty"
+      - "create 0640 nginx adm"
+      - "sharedscripts"
+      - "postrotate"
+      - "systemctl reload test-app"
+      - "endscript"

@@ -1,0 +1,9 @@
+---
+# vars file for roles/nginx
+nginx_templates:
+- nginxport: ""
+  dnsname: ""
+  webroot: ""
+- nginxport: ""
+  dnsname: ""
+  webroot: ""

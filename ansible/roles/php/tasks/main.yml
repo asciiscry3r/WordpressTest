@@ -1,0 +1,21 @@
+
+---
+# tasks file for roles/server_config
+- debug:
+    var: "{{ inventory_hostname }}"
+
+- name: Added Ubuntu Nginx repository | Ubuntu
+  apt_repository:
+    repo: deb https://ppa.launchpadcontent.net/ondrej/php/ubuntu "{{ ansible_distribution_release }}" nginx
+    state: present
+  tags:
+    - add_repository
+
+- name: Install PHP | Ubuntu
+  apt:
+    pkg: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - php8.2
+
