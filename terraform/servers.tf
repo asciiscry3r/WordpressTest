@@ -77,12 +77,12 @@ resource "aws_db_subnet_group" "wordpress" {
 
 resource "aws_db_instance" "wordpress" {
   allocated_storage    = 10
-  //db_name              = "wordpress"
+  name                 = "wordpress"
   engine               = "mysql"
   engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   username             = "wordpress"
-  password             = "swswsws" // just placeholder
+  password             = "dsws" // just placeholder
   db_subnet_group_name = aws_db_subnet_group.wordpress.name
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
@@ -135,3 +135,19 @@ module "deploy_wordpress_server" {
     web_server_ingress = true
 }
 
+data "aws_db_instance" "wordpress" {
+  db_instance_identifier = aws_db_instance.wordpress.id
+}
+
+resource "aws_security_group_rule" "wordpress" {
+  count             = length(data.aws_db_instance.wordpress.vpc_security_groups)
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "tcp"
+  //cidr_blocks       = ["0.0.0.0/0"]
+  //ipv6_cidr_blocks  = ["::/0"]
+  security_group_id = module.deploy_wordpress_server.server_security_group_id
+  source_security_group_id = data.aws_db_instance.wordpress.vpc_security_groups[count.index]
+
+}
