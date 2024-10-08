@@ -126,7 +126,7 @@ Latest deployment:
 https://github.com/asciiscry3r/WordpressTest/actions/runs/11239496083/job/31246674228
 ```
 ### brief overview of the code structure:
-
+```
 ├── ansible   Ansible folder
 │   ├── host_vars   Variables for hosts
 │   └── roles   Roles with different tasks
@@ -140,5 +140,5 @@ https://github.com/asciiscry3r/WordpressTest/actions/runs/11239496083/job/312466
 .github/   CICD workflow instruction
 └── workflows 
     ├── wordpress-deployments.yml
-
+```
 #### Fin
