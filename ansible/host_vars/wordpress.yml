@@ -3,6 +3,8 @@
 ---
 
 server_name: wordpress.mksscryertower.quest
+install_php: true
+php_version: 8.2
 server_root_folder: /var/www/mkssite
 server_web_user: www-data
 server_timezone: "Europe/Kiev"

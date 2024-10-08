@@ -1,0 +1,28 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  deploy:
+    name: "Deploy to test tasl server"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/wordpress_test.key
+          chmod 600 ~/.ssh/wordpress_test.key
+          cat >>~/.ssh/config <<END
+          Host wordpress.mksscryerftower.quest
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/wordpress_test.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.TEST_SSH_USER }}
+          SSH_KEY: ${{ secrets.TEST_SSH_KEY }}
+          SSH_HOST: ${{ secrets.TEST_SSH_HOST }}
+
+      - name: Upload files to server
+        run: scp -r wordpress wordpress.mksscryerftower.quest:/var/www/mkssite/
+
