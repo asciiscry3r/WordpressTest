@@ -10,6 +10,7 @@
     * Ansible
     * Bash
     * GitHub Actions
+    * Ubuntu 20.04
 
 Time - about 10 hours with distraction
 
@@ -62,10 +63,13 @@ server_apps:
 ......
 ......
 ```
+customization avaliable trought offical documentation
 
 #### Terraform
 
-Im use my own module for EC2 and other described in terraform/servers.tf. This is are SG setting, RDS settings, VPC settings and other.
+Im use my own module for EC2, because time, and other described in terraform/servers.tf. This is are SG setting, RDS settings, VPC settings and other.
+
+customization avaliable trought offical documentation
 
 #### GitHub Action
 
@@ -121,5 +125,20 @@ Latest deployment:
 ```
 https://github.com/asciiscry3r/WordpressTest/actions/runs/11239496083/job/31246674228
 ```
+### brief overview of the code structure:
+
+├── ansible   Ansible folder
+│   ├── host_vars   Variables for hosts
+│   └── roles   Roles with different tasks
+├── terraform   Terraform for AWS
+│   └── modules   My module for EC2 
+└── wordpress   Source code of Wordpress
+    ├── wp-admin
+    ├── wp-content
+    └── wp-includes
+
+.github/   CICD workflow instruction
+└── workflows 
+    ├── wordpress-deployments.yml
 
 #### Fin
