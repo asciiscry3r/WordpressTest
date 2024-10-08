@@ -113,4 +113,13 @@ nutcracker -c config.yml
 
 But wp for some "php plugin backend" related reason didnt see this local socket.
 
+#### Deployment
+
+Automatically after push to main
+
+Latest deployment:
+```
+https://github.com/asciiscry3r/WordpressTest/actions/runs/11239496083/job/31246674228
+```
+
 #### Fin
