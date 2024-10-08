@@ -74,6 +74,9 @@ I try this CICD tool in first time, decide to use only simple bash scripts on se
 ```
 #!/usr/bin/env bash
 
+DATABASE_HOST=$1
+DATABASE_PASSWORD=$2
+
 cd /home/ubuntu
 
 if [ -d WordpressTest ]
@@ -87,7 +90,13 @@ cd /home/ubuntu
 
 rsync -avP WordpressTest/wordpress/ /var/www/mkssite/
 
-cp /home/ubuntu/wp-config.php /var/www/mkssite/
+cp /home/ubuntu/wp-config.php /var/www/mkssite/wp-config.php
+
+sudo sed -i "s/DATABASEPASSPLACEHOLDER/${DATABASE_PASSWORD}/g" /var/www/mkssite/wp-config.php
+sudo sed -i "s/DATABASEHOSTPLACEHOLDER/${DATABASE_HOST}/g" /var/www/mkssite/wp-config.php
+
+sudo systemctl restart php8.2-fpm
+sudo systemctl restart nginx
 
 sudo chown -R www-data:www-data /var/www/mkssite/
 

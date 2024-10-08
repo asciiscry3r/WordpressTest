@@ -24,7 +24,7 @@ jobs:
           SSH_HOST: ${{ vars.TEST_SSH_HOST }}
 
       - name: Upload files to server
-        run: ssh wordpress.mksscryertower.quest "sudo sed -i 's\DATABASEPASSPLACEHOLDER\$DATABASE_PASSWORD\g' /home/ubuntu/wp-config.php && sudo sed -i 's\DATABASEHOSTPLACEHOLDER\$DATABASEHOST\g' /home/ubuntu/wp-config.php" && ssh wordpress.mksscryertower.quest "sudo bash deploy.sh"
+        run: ssh wordpress.mksscryertower.quest "sudo bash deploy.sh $DATABASEHOST $DATABASE_PASSWORD"
         env:
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           DATABASEHOST: ${{ vars.DATABASEHOST }}
