@@ -2,7 +2,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   deploy:
-    name: "Deploy to test tasl server"
+    name: "Deploy to test task server"
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
@@ -12,7 +12,7 @@ jobs:
           echo "$SSH_KEY" > ~/.ssh/wordpress_test.key
           chmod 600 ~/.ssh/wordpress_test.key
           cat >>~/.ssh/config <<END
-          Host wordpress.mksscryerftower.quest
+          Host wordpress.mksscryertower.quest
             HostName $SSH_HOST
             User $SSH_USER
             IdentityFile ~/.ssh/wordpress_test.key
@@ -24,5 +24,5 @@ jobs:
           SSH_HOST: ${{ vars.TEST_SSH_HOST }}
 
       - name: Upload files to server
-        run: scp -r wordpress/ wordpress.mksscryerftower.quest:/var/www/mkssite/
+        run: ssh wordpress.mksscryertower.quest "sudo bash deploy.sh"
 
