@@ -3,4 +3,6 @@ terraform/.terraform
 terraform/.terraform.lock.hcl
 terraform/modules/ec2instance/wordpress_server.pem
 wordpressadmin_credentials.csv~
-*.*~
+*~
+*.swp
+*.swo
