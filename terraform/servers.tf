@@ -82,7 +82,7 @@ resource "aws_db_instance" "wordpress" {
   engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   username             = "wordpress"
-  password             = "swsw" // just placeholder
+  password             = "swswsws" // just placeholder
   db_subnet_group_name = aws_db_subnet_group.wordpress.name
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
