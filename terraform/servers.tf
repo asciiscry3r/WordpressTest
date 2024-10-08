@@ -82,7 +82,7 @@ resource "aws_db_instance" "wordpress" {
   engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   username             = "wordpress"
-  password             = "wswswsw" // just placeholder
+  password             = "swsw" // just placeholder
   db_subnet_group_name = aws_db_subnet_group.wordpress.name
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
@@ -109,13 +109,14 @@ resource "aws_elasticache_subnet_group" "wordpress" {
 }
 
 resource "aws_elasticache_cluster" "wordpress" {
-  cluster_id        = "wordpress"
-  engine            = "redis"
-  node_type         = "cache.t3.micro"
-  num_cache_nodes   = 1
-  port              = 6379
-  apply_immediately = true
-  subnet_group_name = aws_elasticache_subnet_group.wordpress.name
+  cluster_id         = "wordpress"
+  engine             = "redis"
+  node_type          = "cache.t3.micro"
+  num_cache_nodes    = 1
+  port               = 6379
+  apply_immediately  = true
+  subnet_group_name  = aws_elasticache_subnet_group.wordpress.name
+  security_group_ids = [ aws_security_group.wordpress_redis.id ]
 }
 
 module "deploy_wordpress_server" {
@@ -150,4 +151,32 @@ resource "aws_security_group_rule" "wordpress_db" {
   source_security_group_id = module.deploy_wordpress_server.server_security_group_id
   security_group_id        = data.aws_db_instance.wordpress.vpc_security_groups[count.index]
 
+}
+
+resource "aws_security_group" "wordpress_redis" {
+  name        = "allow_tls"
+  description = "Allow TLS inbound traffic and all outbound traffic"
+  vpc_id      = aws_vpc.wordpress.id
+
+  tags = {
+    Name = "Wordpress allow access"
+  }
+}
+
+resource "aws_security_group_rule" "wordpress_redis_in" {
+  security_group_id        = aws_security_group.wordpress_redis.id
+  source_security_group_id = module.deploy_wordpress_server.server_security_group_id
+  type                     = "ingress"
+  from_port                = 6379
+  protocol                 = "tcp"
+  to_port                  = 6379
+}
+
+resource "aws_security_group_rule" "wordpress_redis_out" {
+  security_group_id = aws_security_group.wordpress_redis.id
+  type                     = "egress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  cidr_blocks              = ["0.0.0.0/0"]
 }
